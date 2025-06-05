@@ -1,0 +1,752 @@
+openapi: 3.0.1
+info:
+  contact: {}
+  description: This is a custody wallet service api server.
+  title: Wallet API Documentation
+  version: "1.0"
+servers:
+- url: /
+paths:
+  /api/v1/accounts:
+    get:
+      description: List accounts
+      operationId: v1.accounts.List
+      parameters:
+      - explode: true
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: size
+        required: false
+        schema:
+          maximum: 100
+          minimum: 1
+          type: integer
+        style: form
+      responses:
+        "102":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Processing
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page-Account'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error
+      security:
+      - Credentials: []
+      summary: List accounts
+      tags:
+      - accounts
+      x-accepts:
+      - application/json
+  /api/v1/currencies:
+    get:
+      description: List currencies
+      operationId: v1.currencies.List
+      parameters:
+      - description: The cursor to use for pagination.
+        explode: true
+        in: query
+        name: cursor
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: The number of items to return per page.
+        explode: true
+        in: query
+        name: limit
+        required: true
+        schema:
+          maximum: 100
+          minimum: 1
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: rated
+        required: false
+        schema:
+          type: boolean
+        style: form
+      responses:
+        "102":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Processing
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CursorPage-Currency'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error
+      security:
+      - Credentials: []
+      summary: List currencies
+      tags:
+      - currencies
+      x-accepts:
+      - application/json
+  /api/v1/users/auth:
+    post:
+      description: User auth
+      operationId: v1.users.Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Credentials'
+        description: Request body
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResult'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error
+      summary: User auth
+      tags:
+      - user
+      x-codegen-request-body-name: request
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /api/v1/wallets/balance:
+    get:
+      description: Get wallet balance history
+      operationId: v1.wallets.getBalance
+      responses:
+        "102":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Processing
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Balance'
+          description: OK
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error
+      security:
+      - Credentials: []
+      summary: Get wallet balance history
+      tags:
+      - wallets
+      x-accepts:
+      - application/json
+  /api/v1/wallets/balance_history:
+    get:
+      description: List wallet balance history
+      operationId: v1.wallets.ListBalance History
+      parameters:
+      - description: RFC 3339
+        explode: true
+        in: query
+        name: begin_at
+        required: true
+        schema:
+          type: string
+        style: form
+      - description: RFC 3339
+        explode: true
+        in: query
+        name: end_at
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "102":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Processing
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListBalanceHistoryResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error
+      security:
+      - Credentials: []
+      summary: List wallet balance history
+      tags:
+      - wallets
+      x-accepts:
+      - application/json
+components:
+  schemas:
+    Account:
+      example:
+        available_balance_fiat_amount: available_balance_fiat_amount
+        locked_balance: locked_balance
+        rate: 0.8008281904610115
+        currency: currency
+        available_balance: available_balance
+        available_balance_fiat_currency: available_balance_fiat_currency
+      properties:
+        available_balance:
+          description: available asset balance
+          type: string
+        available_balance_fiat_amount:
+          description: available balance - the amount of fiat currency
+          type: string
+        available_balance_fiat_currency:
+          description: available balance - fiat currency
+          type: string
+        currency:
+          description: Id            string `json:"id"`
+          type: string
+        locked_balance:
+          description: freeze balances
+          type: string
+        rate:
+          description: "exchange rate. e.g.: 1.000293074056343"
+          type: number
+      type: object
+    AuthResult:
+      example:
+        access_token: access_token
+        wallet_id: wallet_id
+        expires_at: 0
+        user_id: user_id
+        is_new_user: true
+      properties:
+        access_token:
+          type: string
+        expires_at:
+          type: integer
+        is_new_user:
+          type: boolean
+        user_id:
+          type: string
+        wallet_id:
+          type: string
+      type: object
+    Balance:
+      example:
+        usdt_balance: usdt_balance
+        timestamp: timestamp
+      properties:
+        timestamp:
+          type: string
+        usdt_balance:
+          type: string
+      type: object
+    Credentials:
+      example:
+        verifier: verifier
+        options:
+          key: "{}"
+      properties:
+        options:
+          additionalProperties: {}
+          type: object
+        verifier:
+          type: string
+      type: object
+    Currency:
+      example:
+        symbol: symbol
+        code: code
+        precision: 1
+        created_at: created_at
+        can_deposit: true
+        contract_address: contract_address
+        networks:
+        - code: code
+          need_memo: true
+          fee: fee
+          fee_currency: fee_currency
+          can_deposit: true
+          contract_address: contract_address
+          min_fee_for_ct_addr: min_fee_for_ct_addr
+          min_withdraw_amount: min_withdraw_amount
+          network: network
+          max_withdraw_amount: max_withdraw_amount
+          min_collect_amount: min_collect_amount
+          max_fee_for_ct_addr: max_fee_for_ct_addr
+          min_fee: min_fee
+          name: name
+          can_withdraw: true
+          disabled: true
+          id: id
+          app_id: app_id
+          can_transfer: true
+          min_deposit_amount: min_deposit_amount
+          max_fee: max_fee
+          min_confirmations: 6
+        - code: code
+          need_memo: true
+          fee: fee
+          fee_currency: fee_currency
+          can_deposit: true
+          contract_address: contract_address
+          min_fee_for_ct_addr: min_fee_for_ct_addr
+          min_withdraw_amount: min_withdraw_amount
+          network: network
+          max_withdraw_amount: max_withdraw_amount
+          min_collect_amount: min_collect_amount
+          max_fee_for_ct_addr: max_fee_for_ct_addr
+          min_fee: min_fee
+          name: name
+          can_withdraw: true
+          disabled: true
+          id: id
+          app_id: app_id
+          can_transfer: true
+          min_deposit_amount: min_deposit_amount
+          max_fee: max_fee
+          min_confirmations: 6
+        min_fee_for_ct_addr: min_fee_for_ct_addr
+        min_withdraw_amount: min_withdraw_amount
+        network: network
+        updated_at: updated_at
+        logo: logo
+        can_withdraw: true
+        disabled: true
+        id: id
+        can_transfer: true
+        need_memo: true
+        max_withdraw_amount: max_withdraw_amount
+        rated: true
+        decimals: 0
+        max_fee_for_ct_addr: max_fee_for_ct_addr
+        min_fee: min_fee
+        name: name
+        min_deposit_amount: min_deposit_amount
+        max_fee: max_fee
+      properties:
+        can_deposit:
+          type: boolean
+        can_transfer:
+          type: boolean
+        can_withdraw:
+          type: boolean
+        code:
+          type: string
+        contract_address:
+          type: string
+        created_at:
+          type: string
+        decimals:
+          type: integer
+        disabled:
+          type: boolean
+        id:
+          type: string
+        logo:
+          type: string
+        max_fee:
+          type: string
+        max_fee_for_ct_addr:
+          type: string
+        max_withdraw_amount:
+          type: string
+        min_deposit_amount:
+          type: string
+        min_fee:
+          type: string
+        min_fee_for_ct_addr:
+          type: string
+        min_withdraw_amount:
+          type: string
+        name:
+          type: string
+        need_memo:
+          type: boolean
+        network:
+          type: string
+        networks:
+          items:
+            $ref: '#/components/schemas/CurrencyNetwork'
+          type: array
+        precision:
+          type: integer
+        rated:
+          type: boolean
+        symbol:
+          type: string
+        updated_at:
+          type: string
+      type: object
+    CurrencyNetwork:
+      example:
+        code: code
+        need_memo: true
+        fee: fee
+        fee_currency: fee_currency
+        can_deposit: true
+        contract_address: contract_address
+        min_fee_for_ct_addr: min_fee_for_ct_addr
+        min_withdraw_amount: min_withdraw_amount
+        network: network
+        max_withdraw_amount: max_withdraw_amount
+        min_collect_amount: min_collect_amount
+        max_fee_for_ct_addr: max_fee_for_ct_addr
+        min_fee: min_fee
+        name: name
+        can_withdraw: true
+        disabled: true
+        id: id
+        app_id: app_id
+        can_transfer: true
+        min_deposit_amount: min_deposit_amount
+        max_fee: max_fee
+        min_confirmations: 6
+      properties:
+        app_id:
+          type: string
+        can_deposit:
+          type: boolean
+        can_transfer:
+          type: boolean
+        can_withdraw:
+          type: boolean
+        code:
+          description: 用 code 和 Currency 关联
+          type: string
+        contract_address:
+          type: string
+        disabled:
+          type: boolean
+        fee:
+          type: string
+        fee_currency:
+          type: string
+        id:
+          type: string
+        max_fee:
+          type: string
+        max_fee_for_ct_addr:
+          type: string
+        max_withdraw_amount:
+          description: 单笔最大链上提币量
+          type: string
+        min_collect_amount:
+          description: 最小归集数量
+          type: string
+        min_confirmations:
+          type: integer
+        min_deposit_amount:
+          description: 单笔最小存入值
+          type: string
+        min_fee:
+          type: string
+        min_fee_for_ct_addr:
+          type: string
+        min_withdraw_amount:
+          description: 单笔最小链上提币量
+          type: string
+        name:
+          type: string
+        need_memo:
+          type: boolean
+        network:
+          type: string
+      type: object
+    CursorPage-Currency:
+      example:
+        prev_cursor: prev_cursor
+        next_cursor: next_cursor
+        has_next: true
+        items:
+        - symbol: symbol
+          code: code
+          precision: 1
+          created_at: created_at
+          can_deposit: true
+          contract_address: contract_address
+          networks:
+          - code: code
+            need_memo: true
+            fee: fee
+            fee_currency: fee_currency
+            can_deposit: true
+            contract_address: contract_address
+            min_fee_for_ct_addr: min_fee_for_ct_addr
+            min_withdraw_amount: min_withdraw_amount
+            network: network
+            max_withdraw_amount: max_withdraw_amount
+            min_collect_amount: min_collect_amount
+            max_fee_for_ct_addr: max_fee_for_ct_addr
+            min_fee: min_fee
+            name: name
+            can_withdraw: true
+            disabled: true
+            id: id
+            app_id: app_id
+            can_transfer: true
+            min_deposit_amount: min_deposit_amount
+            max_fee: max_fee
+            min_confirmations: 6
+          - code: code
+            need_memo: true
+            fee: fee
+            fee_currency: fee_currency
+            can_deposit: true
+            contract_address: contract_address
+            min_fee_for_ct_addr: min_fee_for_ct_addr
+            min_withdraw_amount: min_withdraw_amount
+            network: network
+            max_withdraw_amount: max_withdraw_amount
+            min_collect_amount: min_collect_amount
+            max_fee_for_ct_addr: max_fee_for_ct_addr
+            min_fee: min_fee
+            name: name
+            can_withdraw: true
+            disabled: true
+            id: id
+            app_id: app_id
+            can_transfer: true
+            min_deposit_amount: min_deposit_amount
+            max_fee: max_fee
+            min_confirmations: 6
+          min_fee_for_ct_addr: min_fee_for_ct_addr
+          min_withdraw_amount: min_withdraw_amount
+          network: network
+          updated_at: updated_at
+          logo: logo
+          can_withdraw: true
+          disabled: true
+          id: id
+          can_transfer: true
+          need_memo: true
+          max_withdraw_amount: max_withdraw_amount
+          rated: true
+          decimals: 0
+          max_fee_for_ct_addr: max_fee_for_ct_addr
+          min_fee: min_fee
+          name: name
+          min_deposit_amount: min_deposit_amount
+          max_fee: max_fee
+        - symbol: symbol
+          code: code
+          precision: 1
+          created_at: created_at
+          can_deposit: true
+          contract_address: contract_address
+          networks:
+          - code: code
+            need_memo: true
+            fee: fee
+            fee_currency: fee_currency
+            can_deposit: true
+            contract_address: contract_address
+            min_fee_for_ct_addr: min_fee_for_ct_addr
+            min_withdraw_amount: min_withdraw_amount
+            network: network
+            max_withdraw_amount: max_withdraw_amount
+            min_collect_amount: min_collect_amount
+            max_fee_for_ct_addr: max_fee_for_ct_addr
+            min_fee: min_fee
+            name: name
+            can_withdraw: true
+            disabled: true
+            id: id
+            app_id: app_id
+            can_transfer: true
+            min_deposit_amount: min_deposit_amount
+            max_fee: max_fee
+            min_confirmations: 6
+          - code: code
+            need_memo: true
+            fee: fee
+            fee_currency: fee_currency
+            can_deposit: true
+            contract_address: contract_address
+            min_fee_for_ct_addr: min_fee_for_ct_addr
+            min_withdraw_amount: min_withdraw_amount
+            network: network
+            max_withdraw_amount: max_withdraw_amount
+            min_collect_amount: min_collect_amount
+            max_fee_for_ct_addr: max_fee_for_ct_addr
+            min_fee: min_fee
+            name: name
+            can_withdraw: true
+            disabled: true
+            id: id
+            app_id: app_id
+            can_transfer: true
+            min_deposit_amount: min_deposit_amount
+            max_fee: max_fee
+            min_confirmations: 6
+          min_fee_for_ct_addr: min_fee_for_ct_addr
+          min_withdraw_amount: min_withdraw_amount
+          network: network
+          updated_at: updated_at
+          logo: logo
+          can_withdraw: true
+          disabled: true
+          id: id
+          can_transfer: true
+          need_memo: true
+          max_withdraw_amount: max_withdraw_amount
+          rated: true
+          decimals: 0
+          max_fee_for_ct_addr: max_fee_for_ct_addr
+          min_fee: min_fee
+          name: name
+          min_deposit_amount: min_deposit_amount
+          max_fee: max_fee
+      properties:
+        has_next:
+          description: Whether there are more items available in the next page.
+          type: boolean
+        items:
+          description: List of items in the current page.
+          items:
+            $ref: '#/components/schemas/Currency'
+          type: array
+        next_cursor:
+          description: The cursor to use for fetching the next page of items.
+          type: string
+        prev_cursor:
+          description: The cursor to use for fetching the previous page of items.
+          type: string
+      type: object
+    Error:
+      example:
+        code: code
+        error: error
+      properties:
+        code:
+          description: error code
+          type: string
+        error:
+          description: error message
+          type: string
+      required:
+      - code
+      - error
+      type: object
+    ListBalanceHistoryResponse:
+      example:
+        end_at: end_at
+        balances:
+        - usdt_balance: usdt_balance
+          timestamp: timestamp
+        - usdt_balance: usdt_balance
+          timestamp: timestamp
+        begin_at: begin_at
+      properties:
+        balances:
+          items:
+            $ref: '#/components/schemas/Balance'
+          type: array
+        begin_at:
+          type: string
+        end_at:
+          type: string
+      type: object
+    Page-Account:
+      example:
+        total: 6
+        items:
+        - available_balance_fiat_amount: available_balance_fiat_amount
+          locked_balance: locked_balance
+          rate: 0.8008281904610115
+          currency: currency
+          available_balance: available_balance
+          available_balance_fiat_currency: available_balance_fiat_currency
+        - available_balance_fiat_amount: available_balance_fiat_amount
+          locked_balance: locked_balance
+          rate: 0.8008281904610115
+          currency: currency
+          available_balance: available_balance
+          available_balance_fiat_currency: available_balance_fiat_currency
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/Account'
+          type: array
+        total:
+          type: integer
+      type: object
+  securitySchemes:
+    Credentials:
+      in: header
+      name: Authorization
+      type: apiKey
+x-original-swagger-version: "2.0"
+
