@@ -114,6 +114,29 @@ public class APIClient {
         }
     }
 
+    public func listWalletsBalanceHistory(input: Operations.V1_wallets_ListBalanceHistory.Input) async throws
+        -> Components.Schemas.ListBalanceHistoryResponse
+    {
+        let response = try await client.v1_wallets_ListBalanceHistory(input)
+
+        switch response {
+        case .ok(let okResponse):
+            switch okResponse.body {
+            case .json(let balances):
+                return balances
+            }
+        case .code102(_):
+            throw APIClientError.serverError(statusCode: 102, message: "Processing")
+        case .badRequest(_):
+            throw APIClientError.invalidRequest("Bad request")
+        case .internalServerError(_):
+            throw APIClientError.serverError(statusCode: 500, message: "Internal server error")
+        case .undocumented(let statusCode, _):
+            throw APIClientError.serverError(
+                statusCode: statusCode, message: "Failed to get wallets")
+        }
+    }
+
     public func getCurrencies(input: Operations.V1_currencies_List.Input) async throws
         -> Components.Schemas.CursorPageCurrency
     {

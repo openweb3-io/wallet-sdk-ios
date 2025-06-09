@@ -86,6 +86,28 @@ final class APIClientTests: XCTestCase {
         }
     }
     
+    func testListWalletsBalanceHistory() async throws {
+        try XCTSkipIf(client == nil, "Client not initialized")
+        
+        let input = Operations.V1_wallets_ListBalanceHistory.Input(query: .init(beginAt: "2025-06-01", endAt: "2025-06-30"))
+        
+        do {
+            let result: Components.Schemas.ListBalanceHistoryResponse = try await client.listWalletsBalanceHistory(input: input)
+            XCTAssertNotNil(result)
+            print("Wallet balance timestamp: \(result.balances?.first?.timestamp ?? "N/A")")
+            print("Wallet balance USDT: \(result.balances?.first?.usdtBalance ?? "N/A")")
+        } catch let error as APIClientError {
+            switch error {
+            case .authenticationFailed(let message):
+                throw XCTSkip("Authentication failed: \(message)")
+            default:
+                XCTFail("Failed to get wallet balance: \(error)")
+            }
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+    
     func testGetCurrencies() async throws {
         try XCTSkipIf(client == nil, "Client not initialized")
         
